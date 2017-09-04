@@ -1,5 +1,6 @@
 import socket
 import threading
+import struct
 
 
 def new_connect(skt, adr):
@@ -7,9 +8,14 @@ def new_connect(skt, adr):
     skt.send(b'Connected to server!')
     while True:
         data = skt.recv(1024)
+
+        head_length, head_type = struct.unpack('2I', data[:8])
+        body = data[8:8 + head_length]
+        print('receive: ' + body.decode('utf-8'))
+
         if not data or data.decode('utf-8') == 'exit':
             break
-        skt.send(('server got message: %s' % data.decode('utf-8')).encode('utf-8'))
+        skt.send(('server got message: %s' % body.decode('utf-8')).encode('utf-8'))
     skt.close()
     print('Connection from %s:%s closed.' % adr)
 
